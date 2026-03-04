@@ -6,7 +6,7 @@
     
     <arg name="data_path" default="/home/dat/data/MCDVIRAL/NTU"/>
 
-    <arg  name="bag_file"  default="$(arg data_path)/ntu_day_01/*.bag"/>
+    <arg  name="bag_file"  default="$(arg data_path)/ntu_night_08/*.bag"/>
     <!-- <arg  name="bag_file"  default="$(arg data_path)/ntu_day_02/*.bag"/> -->
 
 
@@ -46,12 +46,12 @@
 
     <!-- rviz -->
 
-    <!-- <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find fast_lio)/rviz_cfg/atv.rviz" /> -->
+    <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find fast_lio)/rviz_cfg/atv.rviz" />
 
     <!-- play rosbag  -->
     <!-- <param name="/use_sim_time" value="true" /> -->
     <node required="$(arg autorun)" pkg="rosbag" type="play" name="rosbag_player"
-          args="--clock $(arg bag_file) -r 0.7 -s 0"
+          args="--clock $(arg bag_file) -r 0.5 -s 0"
           launch-prefix="bash -c 'sleep 1; $0 $@' "/>
 
     <node pkg="tf2_ros" type="static_transform_publisher"

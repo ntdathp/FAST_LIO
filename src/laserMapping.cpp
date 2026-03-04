@@ -562,14 +562,14 @@ void publish_frame_world(const ros::Publisher &pubLaserCloudFull)
 
         *pcl_wait_save += *laserCloudWorld;
 
-        string kf_inW_dir = exp_log_dir + "/kfCloudInW";
-        mkdir(kf_inW_dir.c_str(), 0777);
+        // string kf_inW_dir = exp_log_dir + "/kfCloudInW";
+        // mkdir(kf_inW_dir.c_str(), 0777);
 
         string kf_inB_dir = exp_log_dir + "/kfCloudInB";
         mkdir(kf_inB_dir.c_str(), 0777);
 
-        string odom_dir = exp_log_dir + "/odom";
-        mkdir(odom_dir.c_str(), 0777);
+        // string odom_dir = exp_log_dir + "/odom";
+        // mkdir(odom_dir.c_str(), 0777);
 
         static double first_time = lidar_end_time;
 
@@ -578,7 +578,6 @@ void publish_frame_world(const ros::Publisher &pubLaserCloudFull)
 
         if (pcl_wait_save->size() > 0 && pcd_save_interval > 0 && scan_wait_num >= pcd_save_interval)
         {
-            pcd_index++;
 
             // Form the file name with second_nanosecond format
             ros::Time log_time = ros::Time().fromSec(lidar_end_time);
@@ -611,36 +610,40 @@ void publish_frame_world(const ros::Publisher &pubLaserCloudFull)
             pcl::PCDWriter pcd_writer;
 
             // Writing the pointcloud in world frame
-            string kf_inW_pcd_filename = kf_inW_dir + "/" + timestamp_text + string(".pcd");
-            pcd_writer.writeBinary(kf_inW_pcd_filename, *pcl_wait_save);
+
+            // string kf_inW_pcd_filename = kf_inW_dir + "/" + timestamp_text + string(".pcd");
+            // pcd_writer.writeBinary(kf_inW_pcd_filename, *pcl_wait_save);
             pcl_wait_save->clear();
-            cout << "Time: " << (int)((lidar_end_time - first_time) / 0.1) * 0.1 << ". Saving W-ref scan to " << kf_inW_pcd_filename << endl;
+            // cout << "Time: " << (int)((lidar_end_time - first_time) / 0.1) * 0.1 << ". Saving W-ref scan to " << kf_inW_pcd_filename << endl;
 
             // Writing the pointcloud in body frame
-            string kf_inB_pcd_filename = kf_inB_dir + "/" + timestamp_text + string(".pcd");
+            std::string kf_inB_pcd_filename =
+                kf_inB_dir + "/kfCloudInB_" + std::to_string(pcd_index) + ".pcd";
             pcd_writer.writeBinary(kf_inB_pcd_filename, *pcl_wait_save_inB);
             cout << "Time: " << (int)((lidar_end_time - first_time) / 0.1) * 0.1 << ". Saving B-ref scan to " << kf_inB_pcd_filename << endl;
 
             // Writing the odom file
-            std::ofstream odom_file;
-            odom_file.open(exp_log_dir + "/odom/" + timestamp_text + ".odom");
-            odom_file.precision(std::numeric_limits<double>::digits10 + 1);
 
-            Matrix<double, 4, 4> T_w_b = Matrix4d::Identity();
-            T_w_b.block<3, 3>(0, 0) = state_point.rot.toRotationMatrix();
-            T_w_b.block<3, 1>(0, 3) = state_point.pos;
+            // std::ofstream odom_file;
+            // odom_file.open(exp_log_dir + "/odom/" + timestamp_text + ".odom");
+            // odom_file.precision(std::numeric_limits<double>::digits10 + 1);
 
-            for (int i = 0; i < T_w_b.rows(); i++)
-            {
-                for (int j = 0; j < T_w_b.cols(); j++)
-                    odom_file << T_w_b(i, j) << " ";
+            // Matrix<double, 4, 4> T_w_b = Matrix4d::Identity();
+            // T_w_b.block<3, 3>(0, 0) = state_point.rot.toRotationMatrix();
+            // T_w_b.block<3, 1>(0, 3) = state_point.pos;
 
-                odom_file << "\n";
-            }
+            // for (int i = 0; i < T_w_b.rows(); i++)
+            // {
+            //     for (int j = 0; j < T_w_b.cols(); j++)
+            //         odom_file << T_w_b(i, j) << " ";
 
-            odom_file.close();
+            //     odom_file << "\n";
+            // }
+
+            // odom_file.close();
 
             scan_wait_num = 0;
+            pcd_index++;
         }
     }
 }
@@ -1108,7 +1111,7 @@ int main(int argc, char **argv)
             if (scan_pub_en && scan_body_pub_en)
                 publish_frame_body(pubLaserCloudFull_body);
             // publish_effect_world(pubLaserCloudEffect);
-            // publish_map(pubLaserCloudMap);
+            publish_map(pubLaserCloudMap);
 
             /*** Debug variables ***/
             if (runtime_pos_log)

@@ -1,0 +1,47 @@
+<launch>
+  <!-- Eagle Scanner (Vanjee) + FAST-LIO + rosbag play -->
+
+  <arg name="autorun"     default="false"/>
+
+  <arg name="exp_log_dir" default="/home/dat/logs/fastlio_logs_mp/eagle_scanner/"/>
+  <arg name="bag_file"    default="/home/dat/data/scanner_eagle/20250926123456/LIDAR_20250926123456.bag"/>
+
+  <arg name="rviz" default="true" />
+
+  <!-- As requested -->
+  <param name="use_sim_time" value="false"/>
+
+  <rosparam command="load" file="$(find fast_lio)/config/eagle_scanner.yaml" />
+
+  <param name="feature_extract_enable" type="bool" value="0"/>
+  <param name="point_filter_num" type="int" value="3"/>
+  <param name="max_iteration" type="int" value="3" />
+  <param name="filter_size_surf" type="double" value="0.5" />
+  <param name="filter_size_map" type="double" value="0.5" />
+  <param name="cube_side_length" type="double" value="1000" />
+  <param name="runtime_pos_log_enable" type="bool" value="0" />
+  <param name="exp_log_dir"             type="string" value="$(arg exp_log_dir)"/>
+
+  <!-- Convert Vanjee cloud: timestamp(float64) -> time(float32), height=1 -->
+  <node pkg="fast_lio"
+        type="vanjee_to_fastlio_cloud.py"
+        name="vanjee_to_fastlio_cloud"
+        output="screen">
+    <param name="in"  value="/vanjee_points722"/>
+    <param name="out" value="/vanjee_points722_time"/>
+  </node>
+
+  <!-- FAST-LIO mapping -->
+  <node pkg="fast_lio" type="fastlio_mapping" name="laserMapping" output="screen" />
+
+  <!-- Play rosbag (no clock since use_sim_time=false) -->
+  <node pkg="rosbag" type="play" name="play_bag"
+      launch-prefix="bash -c 'sleep 1; exec $0 $@'"
+      args="-r 1.0 $(arg bag_file)" />
+
+  <group if="$(arg rviz)">
+    <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz"
+          args="-d $(find fast_lio)/rviz_cfg/eagle_scanner.rviz" />
+  </group>
+
+</launch>

@@ -3,6 +3,8 @@
 
     <arg name="rviz" default="true" />
 
+    
+
     <rosparam command="load" file="$(find fast_lio)/config/velodyne.yaml" />
 
     <param name="feature_extract_enable" type="bool" value="0"/>
